@@ -1,4 +1,3 @@
-
 const rules = [
   {
     id: "upfront_payment",
@@ -43,23 +42,25 @@ function analyzeJob(description) {
     throw new Error("A job description is required.");
   }
 
-  const flags = rules
-    .filter((rule) => rule.pattern.test(description))
-    .map((rule) => ({
-      flagType: rule.id,
-      severity: rule.severity,
-      explanation: rule.explanation
-    }));
-
+  // Find all matching rules
   const matchedRules = rules.filter((rule) =>
     rule.pattern.test(description)
   );
 
+  // Calculate risk score
   const riskScore = Math.min(
     100,
     matchedRules.reduce((total, rule) => total + rule.points, 0)
   );
 
+  // Generate detected warning flags
+  const detectedFlags = matchedRules.map((rule) => ({
+    flagType: rule.id,
+    severity: rule.severity,
+    explanation: rule.explanation
+  }));
+
+  // Determine risk level
   let riskLevel = "Low";
 
   if (riskScore >= 40) {
@@ -71,7 +72,7 @@ function analyzeJob(description) {
   return {
     riskScore,
     riskLevel,
-    detectedFlags: flags,
+    detectedFlags,
     analysisVersion: "rules-v1",
     disclaimer:
       "This screening identifies warning signs; it does not prove a job is fraudulent."
